@@ -4,10 +4,11 @@ project(mapa)
 
 set(CMAKE_C_STANDARD 11)
 
-set(SOURCES main.c include/mapa.c)
+set(SOURCES src/mapa.c)
 
-add_executable(mapa ${SOURCES})
+add_library(mapa STATIC ${SOURCES})
 
 target_include_directories(mapa PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/../marrow
 )

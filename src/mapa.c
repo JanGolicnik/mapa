@@ -119,14 +119,50 @@ MapaItem* mapa_get_str(Mapa* mapa, void const* key)
   return mapa_get(mapa, key, strlen(key) + 1);
 }
 
-bool mapa_remove(Mapa* mapa, void const* key, mapa_size_t key_len)
+bool mapa_remove(Mapa* mapa, void const* key, mapa_size_t key_size)
 {
+  mapa_size_t index = mapa->hash_func(key, key_size) % mapa->capacity;
+  for (int i = 0; i < mapa->capacity; i++)
+  {
+    MapaEntry *entry = &mapa->entries[index];
+    if (entry->key == NULL)
+      return true; // item doesnt exist
+
+    if (mapa->cmp_func(entry->key, entry->key_size, key, key_size) != 0)
+    {
+      index = (index + 1) % mapa->capacity;
+      continue;
+    }
+
+    free(entry->item.data);
+    free(entry->key);
+    memset(entry, 0, sizeof(*entry));
+    mapa->size -= 1;
+
+    // move remaining entries down
+    for(int i = 0; i < mapa->capacity; i++)
+    {
+      mapa_size_t index = mapa->hash_func(key, key_size) % mapa->capacity;
+      MapaEntry *entry = &mapa->entries[index];
+      mapa_size_t next_index = (index + i + 1) % mapa->capacity;
+      MapaEntry *next_entry = &mapa->entries[next_index];
+      if(next_entry->key == NULL ||
+         next_index == mapa->hash_func(next_entry->key, next_entry->key_size))
+        break; // if entry is where it should be or if slot is empty
+
+      memcpy(entry, next_entry, sizeof(*entry));
+      memset(next_entry, 0, sizeof(*entry));
+    }
+
+    return true;
+  }
+
   return false;
 }
 
 bool mapa_remove_str(Mapa* mapa, void const* key)
 {
-  return false;
+  return mapa_remove(mapa, key, strlen(key) + 1);
 }
 
 
