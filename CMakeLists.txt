@@ -10,5 +10,5 @@ add_library(mapa STATIC ${SOURCES})
 
 target_include_directories(mapa PUBLIC
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/../marrow
+    ${CMAKE_SOURCE_DIR}/vendor/marrow
 )
